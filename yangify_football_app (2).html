@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-slate-950">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YanGify - Cyber Football Community & Command Center</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Orbitron & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            hud: ['Orbitron', 'sans-serif'],
+          },
+          colors: {
+            cyber: {
+              cyan: '#00f2fe',
+              neon: '#00ff87',
+              blue: '#38bdf8',
+              accent: '#f43f5e',
+              glass: 'rgba(7, 16, 34, 0.75)'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar for High-Tech Panels */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(3, 7, 18, 0.8);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 242, 254, 0.3);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 255, 135, 0.6);
+    }
+
+    /* Cyber Hud & Glass Panels */
+    .hud-panel {
+      background: rgba(8, 15, 30, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 242, 254, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(0, 242, 254, 0.05);
+      position: relative;
+    }
+
+    /* Tech HUD Corner Brackets */
+    .hud-panel::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid #00f2fe;
+      border-left: 2px solid #00f2fe;
+      pointer-events: none;
+    }
+    .hud-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 8px;
+      height: 8px;
+      border-bottom: 2px solid #00ff87;
+      border-right: 2px solid #00ff87;
+      pointer-events: none;
+    }
+
+    .glass-input {
+      background: rgba(3, 10, 24, 0.85);
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      transition: all 0.25s ease;
+    }
+    .glass-input:focus {
+      border-color: #00ff87;
+      box-shadow: 0 0 15px rgba(0, 255, 135, 0.3);
+      outline: none;
+    }
+
+    .neon-text-cyan {
+      text-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
+    }
+    .neon-text-green {
+      text-shadow: 0 0 8px rgba(0, 255, 135, 0.6);
+    }
+
+    /* Scanlines effect overlay */
+    .scanlines {
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0, 0, 0, 0.25) 50%,
+        rgba(0, 0, 0, 0.25)
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+    }
+
+    /* Pulse animations */
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.02); }
+    }
+    .pulse-glow {
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-hidden antialiased select-none bg-slate-950 text-slate-100 relative">
+
+  <!-- DYNAMIC HIGH-TECH HTML5 CANVAS BACKGROUND -->
+  <canvas id="tech-bg-canvas" class="fixed inset-0 z-0 pointer-events-auto"></canvas>
+  
+  <!-- Subtle Scanline Layer -->
+  <div class="fixed inset-0 z-0 scanlines opacity-40"></div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- AUTHENTICATION MODAL -->
+  <div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl overflow-y-auto">
+    <div class="hud-panel w-full max-w-lg p-6 sm:p-8 rounded-2xl shadow-2xl border border-cyan-500/40 my-auto">
+      
+      <div class="text-center mb-5">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-600 via-emerald-500 to-teal-400 text-slate-950 text-3xl font-black shadow-lg shadow-cyan-500/30 mb-3 transform hover:rotate-6 transition">
+          ⚽
+        </div>
+        <h1 class="text-3xl font-hud font-black tracking-wider text-white">Yan<span class="text-cyber-cyan neon-text-cyan">Gify</span></h1>
+        <p class="text-xs font-mono text-cyan-400/80 mt-1 uppercase tracking-widest">[ SECURITY SECURED FOOTBALL COMMAND ]</p>
+      </div>
+
+      <!-- Auth Tabs -->
+      <div class="flex border-b border-cyan-900/60 mb-5 font-hud text-xs tracking-wider">
+        <button id="tab-btn-login" onclick="switchAuthTab('login')" class="flex-1 py-2.5 text-center font-bold text-cyber-cyan border-b-2 border-cyber-cyan transition-all">
+          <i class="fa-solid fa-lock-open mr-1.5"></i> SYS_LOGIN
+        </button>
+        <button id="tab-btn-signup" onclick="switchAuthTab('signup')" class="flex-1 py-2.5 text-center font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-200 transition-all">
+          <i class="fa-solid fa-user-plus mr-1.5"></i> CREATE_ACCOUNT
+        </button>
+      </div>
+
+      <!-- REGISTRATION NOTICE BANNER -->
+      <div id="reg-success-notice" class="hidden mb-5 p-3 rounded-xl bg-cyan-950/80 border border-cyan-400/60 text-cyan-200 text-xs font-mono flex items-start gap-2 animate-pulse">
+        <i class="fa-solid fa-shield-halved text-cyan-400 text-base mt-0.5 shrink-0"></i>
+        <div>
+          <span class="font-hud font-bold text-cyber-cyan uppercase block mb-0.5">ACCOUNT REGISTERED</span>
+          <span id="reg-success-msg">Account registered. Please complete security verification to login.</span>
+        </div>
+      </div>
+
+      <!-- LOCKOUT ALERT BANNER -->
+      <div id="lockout-notice" class="hidden mb-5 p-3 rounded-xl bg-rose-950/80 border border-rose-500/80 text-rose-200 text-xs font-mono flex items-start gap-2">
+        <i class="fa-solid fa-triangle-exclamation text-rose-400 text-base mt-0.5 shrink-0 animate-bounce"></i>
+        <div>
+          <span class="font-hud font-bold text-rose-400 uppercase block mb-0.5">SECURITY LOCKOUT ACTIVE</span>
+          <span>Too many failed verification attempts. Please wait <strong id="lockout-timer-text" class="text-white font-hud">15s</strong> before retrying.</span>
+        </div>
+      </div>
+
+      <!-- LOGIN FORM WITH MULTI-LAYER VERIFICATION -->
+      <form id="login-form" class="space-y-4" onsubmit="handleInitialLoginSubmit(event)">
+        <!-- Username -->
+        <div>
+          <label class="block text-[10px] font-hud font-bold uppercase tracking-widest text-cyan-300 mb-1">Username / ID</label>
+          <div class="relative">
+            <i class="fa-solid fa-user-astronaut absolute left-3.5 top-3.5 text-cyan-500/70 text-sm"></i>
+            <input type="text" id="login-username" required placeholder="Enter your username" class="w-full glass-input pl-10 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-600">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-[10px] font-hud font-bold uppercase tracking-widest text-cyan-300 mb-1">Access Key (Password)</label>
+          <div class="relative">
+            <i class="fa-solid fa-key absolute left-3.5 top-3.5 text-cyan-500/70 text-sm"></i>
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full glass-input pl-10 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-600">
+          </div>
+        </div>
+
+        <!-- LAYER 1: CANVAS ALPHANUMERIC CAPTCHA -->
+        <div class="p-3 bg-slate-900/80 rounded-xl border border-cyan-900/60 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] font-hud font-bold uppercase tracking-widest text-cyan-300 flex items-center gap-1">
+              <i class="fa-solid fa-robot text-cyber-cyan"></i> Visual Security CAPTCHA
+            </label>
+            <button type="button" onclick="generateCaptcha()" class="text-[10px] font-mono text-cyan-400 hover:text-white flex items-center gap-1 transition">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+          </div>
+          
+          <div class="flex items-center gap-3">
+            <!-- Canvas target -->
+            <div class="relative bg-slate-950 rounded-xl border border-cyan-500/40 overflow-hidden shrink-0">
+              <canvas id="captcha-canvas" width="150" height="42" class="block cursor-pointer" onclick="generateCaptcha()" title="Click to refresh CAPTCHA"></canvas>
+            </div>
+            <input type="text" id="login-captcha-input" required placeholder="Type code..." maxlength="6" autocomplete="off" class="flex-1 glass-input px-3 py-2 rounded-xl text-xs sm:text-sm text-white font-mono tracking-widest uppercase placeholder-slate-600">
+          </div>
+        </div>
+
+        <!-- LAYER 2: TACTICAL MATH / LOGIC VERIFICATION -->
+        <div class="p-3 bg-slate-900/80 rounded-xl border border-cyan-900/60 space-y-2">
+          <div class="flex items-center justify-between text-[10px] font-hud font-bold uppercase tracking-widest text-cyan-300">
+            <span><i class="fa-solid fa-calculator text-emerald-400 mr-1"></i> Tactical VAR Logic Math Check</span>
+            <span id="math-challenge-text" class="text-xs font-mono font-bold text-cyber-neon bg-slate-950 px-2 py-0.5 rounded border border-emerald-500/40">7 + 5 = ?</span>
+          </div>
+          <input type="number" id="login-math-input" required placeholder="Enter math result..." autocomplete="off" class="w-full glass-input px-3 py-2 rounded-xl text-xs sm:text-sm text-white font-mono placeholder-slate-600">
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="login-submit-btn" class="w-full py-3 bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 font-hud font-bold text-slate-950 rounded-xl shadow-lg shadow-cyan-500/30 transition-all transform active:scale-95 tracking-widest uppercase flex items-center justify-center gap-2">
+          <span>PROCEED TO 2FA CLEARANCE</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- SIGN UP FORM -->
+      <form id="signup-form" class="space-y-4 hidden" onsubmit="handleSignUp(event)">
+        <div>
+          <label class="block text-[10px] font-hud font-bold uppercase tracking-widest text-cyan-300 mb-1">Desired Username</label>
+          <input type="text" id="signup-username" required placeholder="e.g. CyberGunner" class="w-full glass-input px-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-600">
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-hud font-bold uppercase tracking-widest text-cyan-300 mb-1">Set Password (Min 6 chars)</label>
+          <input type="password" id="signup-password" oninput="updatePasswordStrength(this.value)" required placeholder="••••••••" class="w-full glass-input px-4 py-2.5 rounded-xl text-sm text-white placeholder-slate-600">
+          <!-- Password Strength Indicator -->
+          <div class="mt-2 flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-slate-900 rounded-full overflow-hidden flex gap-1">
+              <div id="pass-str-1" class="h-full w-1/3 bg-slate-800 transition-all"></div>
+              <div id="pass-str-2" class="h-full w-1/3 bg-slate-800 transition-all"></div>
+              <div id="pass-str-3" class="h-full w-1/3 bg-slate-800 transition-all"></div>
+            </div>
+            <span id="pass-str-label" class="text-[10px] font-mono text-slate-400 w-16 text-right">Strength</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-hud font-bold uppercase tracking-widest text-cyan-300 mb-1">Supported Football Club</label>
+          <select id="signup-club" class="w-full glass-input px-4 py-2.5 rounded-xl text-sm text-white bg-slate-950">
+            <option value="Arsenal FC 🔴">Arsenal FC 🔴</option>
+            <option value="Real Madrid ⚪">Real Madrid ⚪</option>
+            <option value="FC Barcelona 🔵🔴">FC Barcelona 🔵🔴</option>
+            <option value="Manchester City 🩵">Manchester City 🩵</option>
+            <option value="Liverpool FC 🔴">Liverpool FC 🔴</option>
+            <option value="Bayern Munich 🔴⚪">Bayern Munich 🔴⚪</option>
+            <option value="PSG 🔵🔴">PSG 🔵🔴</option>
+            <option value="Inter Milan 🔵⚫">Inter Milan 🔵⚫</option>
+            <option value="Football Fan ⚽">Other Fan ⚽</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-[10px] font-hud font-bold uppercase tracking-widest text-cyan-300 mb-1">Cyber HUD Color Theme</label>
+          <div class="flex items-center gap-3">
+            <label class="cursor-pointer"><input type="radio" name="avatar-color" value="from-cyan-500 to-emerald-500" checked class="sr-only peer"><div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-emerald-500 peer-checked:ring-2 peer-checked:ring-white"></div></label>
+            <label class="cursor-pointer"><input type="radio" name="avatar-color" value="from-rose-500 to-red-600" class="sr-only peer"><div class="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 to-red-600 peer-checked:ring-2 peer-checked:ring-white"></div></label>
+            <label class="cursor-pointer"><input type="radio" name="avatar-color" value="from-blue-500 to-indigo-600" class="sr-only peer"><div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 peer-checked:ring-2 peer-checked:ring-white"></div></label>
+            <label class="cursor-pointer"><input type="radio" name="avatar-color" value="from-amber-400 to-orange-500" class="sr-only peer"><div class="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-400 to-orange-500 peer-checked:ring-2 peer-checked:ring-white"></div></label>
+            <label class="cursor-pointer"><input type="radio" name="avatar-color" value="from-purple-500 to-pink-500" class="sr-only peer"><div class="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 peer-checked:ring-2 peer-checked:ring-white"></div></label>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-cyber-neon hover:bg-emerald-400 font-hud font-bold text-slate-950 rounded-xl shadow-lg transition-all transform active:scale-95 tracking-widest uppercase">
+          Register User <i class="fa-solid fa-user-plus ml-1.5"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: 2FA TACTICAL ACCESS CODE TOKEN VERIFICATION -->
+  <div id="modal-2fa-verify" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md hidden">
+    <div class="hud-panel w-full max-w-md p-6 rounded-2xl shadow-2xl border border-cyan-500/50">
+      <div class="text-center mb-4">
+        <div class="w-12 h-12 mx-auto rounded-xl bg-cyan-950 border border-cyan-400/60 flex items-center justify-center text-cyber-cyan text-xl mb-2 animate-pulse">
+          <i class="fa-solid fa-shield-cat"></i>
+        </div>
+        <h3 class="text-lg font-hud font-bold text-white">TACTICAL 2FA TOKEN VERIFICATION</h3>
+        <p class="text-xs font-mono text-cyan-300/80">Security Token Required for System Clearance</p>
+      </div>
+
+      <!-- Generated Token Display -->
+      <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl text-center space-y-1 mb-4">
+        <span class="text-[10px] font-hud text-slate-400 uppercase tracking-widest block">GENERATED ACCESS TOKEN</span>
+        <div id="2fa-token-display" class="text-2xl font-hud font-black tracking-widest text-cyber-neon neon-text-green">
+          849210
+        </div>
+        <!-- Countdown Bar -->
+        <div class="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden mt-2">
+          <div id="2fa-timer-bar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-1000 w-full"></div>
+        </div>
+        <span id="2fa-timer-text" class="text-[10px] font-mono text-cyan-400 block pt-1">Token expires in 30s</span>
+      </div>
+
+      <form onsubmit="handleVerify2FAToken(event)" class="space-y-4">
+        <div>
+          <label class="block text-[10px] font-hud font-bold uppercase tracking-widest text-cyan-300 mb-1">Enter 6-Digit Token</label>
+          <input type="text" id="2fa-input-code" maxlength="6" required placeholder="••••••" autocomplete="off" class="w-full glass-input text-center px-4 py-3 rounded-xl text-lg font-hud tracking-widest text-white placeholder-slate-600">
+        </div>
+
+        <div class="flex items-center justify-between gap-2">
+          <button type="button" onclick="close2FAModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 rounded-xl">
+            Cancel
+          </button>
+          <button type="submit" class="flex-1 py-2.5 bg-gradient-to-r from-cyan-500 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 font-hud font-bold text-slate-950 rounded-xl shadow-lg transition tracking-widest uppercase text-xs">
+            Authenticate & Enter <i class="fa-solid fa-lock-open ml-1"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER OVERLAY -->
+  <div id="main-app" class="relative z-10 flex-1 flex flex-col h-screen overflow-hidden hidden">
+
+    <!-- NAVIGATION HEADER HUD -->
+    <header class="hud-panel border-b border-cyan-500/20 px-4 py-3 flex items-center justify-between shrink-0">
+      <!-- Brand & Status Telemetry -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-emerald-400 flex items-center justify-center text-slate-950 text-xl font-black shadow-lg shadow-cyan-500/20">
+          ⚽
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-hud font-black tracking-wider text-white">Yan<span class="text-cyber-cyan neon-text-cyan">Gify</span></h1>
+            <span class="text-[9px] font-mono bg-cyan-950/80 text-cyber-cyan px-2 py-0.5 rounded-md font-bold border border-cyan-500/40 uppercase tracking-widest">v2.5 VAR-SEC</span>
+          </div>
+          <p class="text-[10px] font-mono text-cyan-300/70 hidden sm:block">TAK-GRID TELEMETRY // VERIFIED COMMAND HUB</p>
+        </div>
+      </div>
+
+      <!-- View Switcher (Desktop) -->
+      <div class="hidden md:flex items-center bg-slate-950/80 p-1 rounded-xl border border-cyan-900/60 font-hud text-xs">
+        <button id="nav-btn-all" onclick="setMainView('all')" class="px-4 py-1.5 rounded-lg font-bold transition-all text-slate-950 bg-cyber-cyan shadow-md">
+          <i class="fa-solid fa-border-all mr-1.5"></i> DUAL DASHBOARD
+        </button>
+        <button id="nav-btn-chat" onclick="setMainView('chat')" class="px-4 py-1.5 rounded-lg font-bold transition-all text-slate-400 hover:text-white">
+          <i class="fa-solid fa-comments mr-1.5"></i> STADIUM CHAT
+        </button>
+        <button id="nav-btn-stats" onclick="setMainView('stats')" class="px-4 py-1.5 rounded-lg font-bold transition-all text-slate-400 hover:text-white">
+          <i class="fa-solid fa-chart-line mr-1.5"></i> MATCH & STATS HUB
+        </button>
+      </div>
+
+      <!-- Profile & Admin Badge -->
+      <div class="flex items-center gap-3">
+        <div id="admin-badge-indicator" class="hidden items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500/10 border border-amber-400/40 text-amber-300 text-[10px] font-hud font-bold animate-pulse">
+          <i class="fa-solid fa-shield-crown"></i>
+          <span>ADMIN: YANGWONG</span>
+        </div>
+
+        <button id="btn-manage-users" onclick="openUserManagementModal()" class="hidden px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/50 rounded-xl text-xs font-bold transition">
+          <i class="fa-solid fa-users-gear mr-1"></i> ACCOUNTS
+        </button>
+
+        <div class="flex items-center gap-2 pl-2 border-l border-slate-800">
+          <div id="header-avatar" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-slate-950 shadow">
+            ?
+          </div>
+          <div class="hidden sm:block text-left">
+            <div id="header-username" class="text-xs font-bold text-slate-200">User</div>
+            <div id="header-user-club" class="text-[10px] font-mono text-cyan-400/80">Club</div>
+          </div>
+          <button onclick="handleLogout()" class="p-2 text-slate-400 hover:text-rose-400 transition ml-1" title="Log Out">
+            <i class="fa-solid fa-right-from-bracket text-base"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MOBILE TOP NAV SWITCHER -->
+    <div class="md:hidden flex border-b border-cyan-900/60 bg-slate-950/90 text-xs font-hud font-bold">
+      <button id="mobile-tab-chat" onclick="setMainView('chat')" class="flex-1 py-2.5 text-center border-b-2 border-cyber-cyan text-cyber-cyan transition">
+        <i class="fa-solid fa-comments mr-1"></i> CHAT
+      </button>
+      <button id="mobile-tab-stats" onclick="setMainView('stats')" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 transition">
+        <i class="fa-solid fa-trophy mr-1"></i> SCORES & STATS
+      </button>
+    </div>
+
+    <!-- PINNED ANNOUNCEMENT BANNER (置頂訊息) -->
+    <div class="bg-gradient-to-r from-cyan-950/90 via-slate-950 to-emerald-950/90 border-b border-cyan-500/30 px-4 py-2 flex items-center justify-between shrink-0 shadow-md">
+      <div class="flex items-center gap-3 overflow-hidden">
+        <span class="px-2.5 py-0.5 rounded bg-cyber-cyan text-slate-950 font-hud font-black text-[10px] uppercase tracking-wider shrink-0 flex items-center gap-1 shadow">
+          <i class="fa-solid fa-thumbtack text-xs"></i> 置頂訊息 PINNED
+        </span>
+        <div id="pinned-banner-text" class="text-xs text-cyan-200 font-medium truncate font-mono">
+          Loading pinned telemetry message...
+        </div>
+      </div>
+      <div id="admin-pin-edit-btn" class="hidden shrink-0 ml-2">
+        <button onclick="openPinnedEditModal()" class="px-2.5 py-1 text-xs bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 rounded-lg transition font-bold font-hud">
+          <i class="fa-solid fa-pen-to-square"></i> EDIT PIN
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN TWO-PART WORKSPACE -->
+    <main class="flex-1 flex overflow-hidden relative">
+
+      <!-- PART 1: GROUP FOOTBALL CHATTING -->
+      <section id="section-chat" class="w-full md:w-1/2 flex flex-col border-r border-cyan-900/40 bg-slate-950/40">
+        <!-- Chat Header -->
+        <div class="p-3 bg-slate-950/60 border-b border-cyan-900/40 flex items-center justify-between font-hud">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyber-neon animate-ping"></span>
+            <h2 class="font-bold text-xs tracking-wider text-cyan-300 uppercase">STADIUM FEED // COMMS</h2>
+            <span id="chat-count-badge" class="text-[10px] font-mono bg-slate-900 border border-slate-800 text-slate-400 px-2 py-0.5 rounded-full">0 msgs</span>
+          </div>
+          <div class="text-[10px] font-mono text-cyan-400">
+            <i class="fa-solid fa-satellite-dish text-cyber-cyan mr-1"></i> <span id="online-users-count">14</span> ACTIVE FANS
+          </div>
+        </div>
+
+        <!-- Chat Feed Area -->
+        <div id="chat-messages-container" class="flex-1 overflow-y-auto p-4 space-y-3.5">
+          <!-- Chat messages rendered dynamically -->
+        </div>
+
+        <!-- Quick Reaction Bar -->
+        <div class="px-4 py-2 bg-slate-950/80 border-t border-cyan-900/40 flex items-center gap-2 overflow-x-auto text-xs">
+          <span class="text-cyan-400 font-hud text-[10px] font-bold uppercase shrink-0">QUICK:</span>
+          <button onclick="quickSendEmoji('⚽ GOAL!')" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-cyan-900/50 rounded-lg text-slate-200 transition shrink-0">⚽ GOAL!</button>
+          <button onclick="quickSendEmoji('🔥 INSANE!')" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-cyan-900/50 rounded-lg text-slate-200 transition shrink-0">🔥 Fire</button>
+          <button onclick="quickSendEmoji('🏆 CHAMPIONS!')" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-cyan-900/50 rounded-lg text-slate-200 transition shrink-0">🏆 Trophy</button>
+          <button onclick="quickSendEmoji('🟥 RED CARD!')" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-cyan-900/50 rounded-lg text-slate-200 transition shrink-0">🟥 Red Card</button>
+          <button onclick="quickSendEmoji('👏 MASTERCLASS!')" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-cyan-900/50 rounded-lg text-slate-200 transition shrink-0">👏 Masterclass</button>
+        </div>
+
+        <!-- Message Input Bar -->
+        <form onsubmit="handleSendMessage(event)" class="p-3 bg-slate-950 border-t border-cyan-900/40 flex items-center gap-2">
+          <input type="text" id="chat-input" placeholder="Transmit match analysis or thoughts..." required class="flex-1 glass-input px-4 py-2.5 rounded-xl text-xs sm:text-sm text-white placeholder-slate-600">
+          <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 font-hud font-bold text-slate-950 rounded-xl shadow-md transition flex items-center gap-1.5 uppercase tracking-wider text-xs">
+            <span>Send</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </button>
+        </form>
+      </section>
+
+      <!-- PART 2: MATCH SCORES, LEAGUE TABLES & TOP SCORERS -->
+      <section id="section-stats" class="w-full md:w-1/2 flex flex-col bg-slate-950/20">
+        
+        <!-- Stats Sub-Tabs -->
+        <div class="bg-slate-950/80 p-2 border-b border-cyan-900/40 flex items-center justify-between shrink-0 font-hud">
+          <div class="flex items-center gap-1">
+            <button id="subtab-btn-scores" onclick="setStatsSubTab('scores')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-cyber-cyan shadow transition">
+              <i class="fa-solid fa-futbol mr-1"></i> LIVE SCORES
+            </button>
+            <button id="subtab-btn-table" onclick="setStatsSubTab('table')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition">
+              <i class="fa-solid fa-list-ol mr-1"></i> LEAGUE TABLE
+            </button>
+            <button id="subtab-btn-scorers" onclick="setStatsSubTab('scorers')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition">
+              <i class="fa-solid fa-user-ninja mr-1"></i> TOP SCORERS
+            </button>
+          </div>
+
+          <!-- Admin Quick Add Control -->
+          <div id="admin-stats-controls" class="hidden items-center gap-2">
+            <button id="admin-add-item-btn" onclick="openAdminStatsAddModal()" class="px-2.5 py-1 bg-cyber-cyan/20 border border-cyber-cyan/50 hover:bg-cyber-cyan/30 text-cyber-cyan rounded-lg text-xs font-bold transition flex items-center gap-1">
+              <i class="fa-solid fa-plus"></i> <span>ADD NEW</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- STATS CONTENT PANELS -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+          
+          <!-- SUB-PANEL 1: MATCH SCORES -->
+          <div id="subpanel-scores" class="space-y-3.5">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-hud font-extrabold uppercase tracking-wider text-cyan-400">FIXTURES & TELEMETRY RESULTS</h3>
+              <span class="text-[10px] font-mono text-cyber-neon bg-emerald-950/60 border border-emerald-800 px-2.5 py-0.5 rounded-full font-semibold">
+                ● LIVE VAR UPDATES
+              </span>
+            </div>
+            <div id="matches-list" class="space-y-3">
+              <!-- Matches rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- SUB-PANEL 2: LEAGUE TABLE -->
+          <div id="subpanel-table" class="hidden space-y-3.5">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-hud font-extrabold uppercase tracking-wider text-cyan-400">PREMIER LEAGUE TELEMETRY STANDINGS</h3>
+              <div id="admin-table-sort-btn" class="hidden">
+                <button onclick="autoSortLeagueTable()" class="text-xs font-hud font-bold text-cyan-300 hover:text-white bg-slate-900 border border-cyan-800 px-2.5 py-1 rounded-lg">
+                  <i class="fa-solid fa-arrow-down-short-wide mr-1"></i> SORT PTS/GD
+                </button>
+              </div>
+            </div>
+
+            <div class="hud-panel rounded-xl overflow-hidden border border-cyan-900/50">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-950/90 text-cyan-400 font-hud text-[10px] uppercase tracking-wider border-b border-cyan-900/60">
+                    <tr>
+                      <th class="py-3 px-3 text-center">#</th>
+                      <th class="py-3 px-3">Club</th>
+                      <th class="py-3 px-2 text-center">MP</th>
+                      <th class="py-3 px-2 text-center">W</th>
+                      <th class="py-3 px-2 text-center">D</th>
+                      <th class="py-3 px-2 text-center">L</th>
+                      <th class="py-3 px-2 text-center">GD</th>
+                      <th class="py-3 px-3 text-center font-black text-white">PTS</th>
+                      <th class="admin-only-col hidden py-3 px-2 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="league-table-body" class="divide-y divide-slate-800/60 font-mono font-medium">
+                    <!-- Dynamic Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-PANEL 3: TOP SCORERS -->
+          <div id="subpanel-scorers" class="hidden space-y-3.5">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-hud font-extrabold uppercase tracking-wider text-cyan-400">GOLDEN BOOT TELEMETRY</h3>
+            </div>
+            
+            <div class="hud-panel rounded-xl overflow-hidden border border-cyan-900/50">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-950/90 text-cyan-400 font-hud text-[10px] uppercase tracking-wider border-b border-cyan-900/60">
+                  <tr>
+                    <th class="py-3 px-3 text-center">#</th>
+                    <th class="py-3 px-3">Player</th>
+                    <th class="py-3 px-3">Club</th>
+                    <th class="py-3 px-3 text-center font-bold text-cyber-neon">Goals ⚽</th>
+                    <th class="py-3 px-3 text-center">Assists 👟</th>
+                    <th class="admin-only-col hidden py-3 px-2 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="top-scorers-body" class="divide-y divide-slate-800/60 font-medium">
+                  <!-- Dynamic Scorers -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ADMIN MODAL: USER MANAGEMENT -->
+  <div id="modal-manage-users" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden">
+    <div class="hud-panel w-full max-w-2xl p-6 rounded-2xl shadow-2xl border border-amber-500/40 flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <div>
+          <h2 class="text-base font-hud font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-users-gear text-amber-400"></i> ACCOUNT CONTROL MATRIX
+          </h2>
+          <p class="text-xs font-mono text-slate-400">Admin Privileges logged in as `yangwong`</p>
+        </div>
+        <button onclick="closeModal('modal-manage-users')" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-900 text-cyan-400 font-hud uppercase text-[10px] border-b border-slate-800">
+            <tr>
+              <th class="py-2.5 px-3">User</th>
+              <th class="py-2.5 px-3">Role</th>
+              <th class="py-2.5 px-3">Club</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="user-management-table-body" class="divide-y divide-slate-800 font-mono">
+            <!-- Dynamic users -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="border-t border-slate-800 pt-4 mt-4 flex items-center justify-between">
+        <button onclick="resetDemoData()" class="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-200 text-xs font-hud rounded-xl transition">
+          <i class="fa-solid fa-rotate-left mr-1"></i> RESET ALL DEMO DATA
+        </button>
+        <button onclick="closeModal('modal-manage-users')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition">
+          Close Window
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN MODAL: EDIT PINNED ANNOUNCEMENT (置頂訊息) -->
+  <div id="modal-edit-pinned" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden">
+    <div class="hud-panel w-full max-w-lg p-6 rounded-2xl shadow-2xl border border-cyan-500/40">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <h3 class="text-sm font-hud font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-thumbtack text-cyan-400"></i> EDIT PINNED ANNOUNCEMENT (置頂訊息)
+        </h3>
+        <button onclick="closeModal('modal-edit-pinned')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleSavePinnedMessage(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-hud text-cyan-300 mb-1">PINNED BANNER CONTENT</label>
+          <textarea id="pinned-input-text" rows="3" required class="w-full glass-input p-3 rounded-xl text-xs text-white font-mono placeholder-slate-600"></textarea>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="closeModal('modal-edit-pinned')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 rounded-xl">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-cyber-cyan hover:bg-cyan-400 text-slate-950 font-hud font-bold text-xs rounded-xl shadow">Save Announcement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMIN MODAL: STATS ITEM EDITOR -->
+  <div id="modal-edit-stats" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md hidden">
+    <div class="hud-panel w-full max-w-md p-6 rounded-2xl shadow-2xl border border-cyan-500/40">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+        <h3 id="modal-stats-title" class="text-sm font-hud font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-cyber-cyan"></i> ADMIN TELEMETRY MANAGER
+        </h3>
+        <button onclick="closeModal('modal-edit-stats')" class="text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="form-edit-stats" onsubmit="handleSaveStatsItem(event)" class="space-y-3">
+        <div id="stats-form-fields" class="space-y-3"></div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('modal-edit-stats')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 rounded-xl">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-cyber-neon hover:bg-emerald-400 text-slate-950 font-hud font-bold text-xs rounded-xl shadow">Save Telemetry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- APPLICATION CODE & CANVAS ANIMATION LOGIC -->
+  <script>
+    // --- 3D TACTICAL CANVAS TECH BACKGROUND LOGIC ---
+    (function initTechBackgroundCanvas() {
+      const canvas = document.getElementById('tech-bg-canvas');
+      const ctx = canvas.getContext('2d');
+
+      let width = (canvas.width = window.innerWidth);
+      let height = (canvas.height = window.innerHeight);
+
+      // Mouse tracking for interactive beam effect
+      const mouse = { x: width / 2, y: height / 2, radius: 180 };
+      window.addEventListener('mousemove', (e) => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      });
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      // Particle system nodes
+      const numNodes = 45;
+      const nodes = [];
+      for (let i = 0; i < numNodes; i++) {
+        nodes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: (Math.random() - 0.5) * 0.8,
+          radius: Math.random() * 2 + 1.5,
+          color: Math.random() > 0.4 ? '#00f2fe' : '#00ff87'
+        });
+      }
+
+      // Radar Sweep Variables
+      let sweepAngle = 0;
+      let gridOffset = 0;
+
+      function renderCanvas() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Background Radial Gradient
+        const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 50, width / 2, height / 2, Math.max(width, height));
+        bgGrad.addColorStop(0, '#0a1628');
+        bgGrad.addColorStop(0.6, '#050b14');
+        bgGrad.addColorStop(1, '#020409');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        // 3D Pitch Grid
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 242, 254, 0.12)';
+        ctx.lineWidth = 1;
+
+        const horizonY = height * 0.35;
+        gridOffset = (gridOffset + 0.4) % 40;
+
+        const numPerspectiveLines = 24;
+        for (let i = -numPerspectiveLines / 2; i <= numPerspectiveLines / 2; i++) {
+          const startX = width / 2 + i * 25;
+          const endX = width / 2 + i * 160;
+          ctx.beginPath();
+          ctx.moveTo(startX, horizonY);
+          ctx.lineTo(endX, height);
+          ctx.stroke();
+        }
+
+        for (let y = horizonY; y < height; y += 18) {
+          const ratio = (y - horizonY) / (height - horizonY);
+          const currentY = y + (gridOffset * ratio);
+          if (currentY <= height) {
+            ctx.strokeStyle = `rgba(0, 242, 254, ${0.03 + ratio * 0.15})`;
+            ctx.beginPath();
+            ctx.moveTo(0, currentY);
+            ctx.lineTo(width, currentY);
+            ctx.stroke();
+          }
+        }
+        ctx.restore();
+
+        // Node constellation
+        for (let i = 0; i < nodes.length; i++) {
+          const n = nodes[i];
+          n.x += n.vx;
+          n.y += n.vy;
+
+          if (n.x < 0 || n.x > width) n.vx *= -1;
+          if (n.y < 0 || n.y > height) n.vy *= -1;
+
+          const dxMouse = mouse.x - n.x;
+          const dyMouse = mouse.y - n.y;
+          const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
+          if (distMouse < mouse.radius) {
+            ctx.strokeStyle = `rgba(0, 255, 135, ${1 - distMouse / mouse.radius})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(n.x, n.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.stroke();
+          }
+
+          ctx.fillStyle = n.color;
+          ctx.shadowColor = n.color;
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          for (let j = i + 1; j < nodes.length; j++) {
+            const n2 = nodes[j];
+            const dx = n2.x - n.x;
+            const dy = n2.y - n.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 130) {
+              ctx.strokeStyle = `rgba(0, 242, 254, ${(1 - dist / 130) * 0.25})`;
+              ctx.lineWidth = 0.8;
+              ctx.beginPath();
+              ctx.moveTo(n.x, n.y);
+              ctx.lineTo(n2.x, n2.y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Tactical Sonar Sweep
+        ctx.save();
+        const radarCenterX = width * 0.5;
+        const radarCenterY = height * 0.22;
+        const radarRadius = 140;
+
+        ctx.strokeStyle = 'rgba(0, 242, 254, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(radarCenterX, radarCenterY, radarRadius, 0, Math.PI * 2);
+        ctx.arc(radarCenterX, radarCenterY, radarRadius * 0.6, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(radarCenterX - radarRadius - 10, radarCenterY);
+        ctx.lineTo(radarCenterX + radarRadius + 10, radarCenterY);
+        ctx.moveTo(radarCenterX, radarCenterY - radarRadius - 10);
+        ctx.lineTo(radarCenterX, radarCenterY + radarRadius + 10);
+        ctx.stroke();
+
+        sweepAngle += 0.015;
+        ctx.fillStyle = 'rgba(0, 255, 135, 0.08)';
+        ctx.beginPath();
+        ctx.moveTo(radarCenterX, radarCenterY);
+        ctx.arc(radarCenterX, radarCenterY, radarRadius, sweepAngle, sweepAngle + 0.4);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+
+        requestAnimationFrame(renderCanvas);
+      }
+
+      renderCanvas();
+    })();
+
+    // --- APPLICATION STORAGE & STATE ---
+    const STORAGE_KEY = 'YANGIFY_APP_DATA_V2_HUD';
+
+    const DEFAULT_DATA = {
+      pinnedMessage: "⚡ CHAMPIONS LEAGUE VAR HUB: Real Madrid vs Arsenal Tonight! Chat & Predict below 🏆",
+      currentUser: null,
+      users: [
+        { username: 'yangwong', role: 'admin', team: 'Arsenal FC 🔴', color: 'from-amber-400 to-orange-500' },
+        { username: 'TacticsGuru', role: 'user', team: 'FC Barcelona 🔵🔴', color: 'from-cyan-500 to-emerald-500' },
+        { username: 'GunnerFan99', role: 'user', team: 'Arsenal FC 🔴', color: 'from-rose-500 to-red-600' },
+        { username: 'Madridista_7', role: 'user', team: 'Real Madrid ⚪', color: 'from-purple-500 to-pink-500' }
+      ],
+      passwords: {
+        'yangwong': '20150912',
+        'TacticsGuru': '123456',
+        'GunnerFan99': '123456',
+        'Madridista_7': '123456'
+      },
+      chatMessages: [
+        { id: '1', username: 'yangwong', role: 'admin', team: 'Arsenal FC 🔴', text: 'Welcome football fans to the YanGify HUD Command Center! Keep discussions intense but respectful! ⚽', timestamp: '18:30', isPinned: true },
+        { id: '2', username: 'TacticsGuru', role: 'user', team: 'FC Barcelona 🔵🔴', text: 'Analyzing high-press defensive blocks tonight. Who takes the UCL trophy?', timestamp: '18:32', isPinned: false },
+        { id: '3', username: 'GunnerFan99', role: 'user', team: 'Arsenal FC 🔴', text: 'Saka & Odegaard telemetry links are operating at 99.9% precision 🔥', timestamp: '18:35', isPinned: false },
+        { id: '4', username: 'Madridista_7', role: 'user', team: 'Real Madrid ⚪', text: 'Real Madrid in knockout matches is inevitable 🏆', timestamp: '18:38', isPinned: false }
+      ],
+      matches: [
+        { id: 'm1', league: 'Champions League', homeTeam: 'Arsenal', homeFlag: '🔴', homeScore: 2, awayTeam: 'Real Madrid', awayFlag: '⚪', awayScore: 1, status: 'LIVE 82\'', isLive: true },
+        { id: 'm2', league: 'Premier League', homeTeam: 'Man City', homeFlag: '🩵', homeScore: 3, awayTeam: 'Liverpool', awayFlag: '🔴', awayScore: 3, status: 'FT', isLive: false },
+        { id: 'm3', league: 'La Liga', homeTeam: 'Barcelona', homeFlag: '🔵🔴', homeScore: 1, awayTeam: 'Atletico', awayFlag: '🔴⚪', awayScore: 0, status: 'FT', isLive: false }
+      ],
+      leagueTable: [
+        { id: 't1', rank: 1, club: 'Arsenal FC', logo: '🔴', mp: 28, w: 21, d: 4, l: 3, gd: 42, pts: 67 },
+        { id: 't2', rank: 2, club: 'Manchester City', logo: '🩵', mp: 28, w: 20, d: 5, l: 3, gd: 39, pts: 65 },
+        { id: 't3', rank: 3, club: 'Liverpool FC', logo: '🔴', mp: 28, w: 18, d: 7, l: 3, gd: 31, pts: 61 },
+        { id: 't4', rank: 4, club: 'Aston Villa', logo: '🟣', mp: 28, w: 16, d: 5, l: 7, gd: 15, pts: 53 },
+        { id: 't5', rank: 5, club: 'Tottenham', logo: '⚪', mp: 28, w: 15, d: 5, l: 8, gd: 12, pts: 50 }
+      ],
+      topScorers: [
+        { id: 's1', rank: 1, player: 'Erling Haaland', club: 'Man City', goals: 25, assists: 6 },
+        { id: 's2', rank: 2, player: 'Mohamed Salah', club: 'Liverpool', goals: 22, assists: 11 },
+        { id: 's3', rank: 3, player: 'Bukayo Saka', club: 'Arsenal', goals: 19, assists: 13 },
+        { id: 's4', rank: 4, player: 'Ollie Watkins', club: 'Aston Villa', goals: 16, assists: 10 }
+      ]
+    };
+
+    let appData = null;
+    let activeMainView = 'all';
+    let activeStatsTab = 'scores';
+    let editingStatsItemId = null;
+
+    // --- SECURITY VERIFICATION STATE ---
+    let currentCaptchaText = '';
+    let currentMathAnswer = 0;
+    let pendingLoginUser = null; // Store user awaiting 2FA token
+    let generated2FAToken = '';
+    let tokenTimerInterval = null;
+    let tokenSecondsLeft = 30;
+
+    // Lockout protection state
+    let failedAttempts = 0;
+    let lockoutActive = false;
+    let lockoutSeconds = 15;
+    let lockoutTimerInterval = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDataFromStorage();
+      generateCaptcha();
+      generateMathChallenge();
+      checkSession();
+    });
+
+    function loadDataFromStorage() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          appData = JSON.parse(stored);
+        } catch(e) {
+          appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        }
+      } else {
+        appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        saveDataToStorage();
+      }
+    }
+
+    function saveDataToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    }
+
+    function resetDemoData() {
+      appData = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      saveDataToStorage();
+      showToast('All system demo data reset.', 'info');
+      closeModal('modal-manage-users');
+      renderApp();
+    }
+
+    // --- CANVAS CAPTCHA GENERATOR ---
+    function generateCaptcha() {
+      const canvas = document.getElementById('captcha-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Background
+      ctx.fillStyle = '#050d1a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Random Alphanumeric string
+      const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghkmppqrstuvwxyz';
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      currentCaptchaText = code;
+
+      // Draw Interference noise lines
+      for (let i = 0; i < 6; i++) {
+        ctx.strokeStyle = i % 2 === 0 ? 'rgba(0, 242, 254, 0.4)' : 'rgba(0, 255, 135, 0.4)';
+        ctx.lineWidth = Math.random() * 2 + 1;
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.stroke();
+      }
+
+      // Draw Noise Dots
+      for (let i = 0; i < 40; i++) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.beginPath();
+        ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Render distorted characters
+      ctx.font = 'bold 20px Orbitron, sans-serif';
+      for (let i = 0; i < code.length; i++) {
+        ctx.save();
+        const char = code[i];
+        const x = 16 + i * 21;
+        const y = 28 + (Math.random() - 0.5) * 6;
+        const angle = (Math.random() - 0.5) * 0.4;
+
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.fillStyle = i % 2 === 0 ? '#00f2fe' : '#00ff87';
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 4;
+        ctx.fillText(char, 0, 0);
+        ctx.restore();
+      }
+    }
+
+    // --- TACTICAL MATH CHALLENGE ---
+    function generateMathChallenge() {
+      const num1 = Math.floor(Math.random() * 12) + 3;
+      const num2 = Math.floor(Math.random() * 9) + 2;
+      currentMathAnswer = num1 + num2;
+      const challengeEl = document.getElementById('math-challenge-text');
+      if (challengeEl) {
+        challengeEl.textContent = `${num1} + ${num2} = ?`;
+      }
+    }
+
+    // --- PASSWORD STRENGTH INDICATOR ---
+    function updatePasswordStrength(val) {
+      const bar1 = document.getElementById('pass-str-1');
+      const bar2 = document.getElementById('pass-str-2');
+      const bar3 = document.getElementById('pass-str-3');
+      const label = document.getElementById('pass-str-label');
+
+      bar1.className = 'h-full w-1/3 bg-slate-800 transition-all';
+      bar2.className = 'h-full w-1/3 bg-slate-800 transition-all';
+      bar3.className = 'h-full w-1/3 bg-slate-800 transition-all';
+
+      if (!val) {
+        label.textContent = 'Strength';
+        label.className = 'text-[10px] font-mono text-slate-400 w-16 text-right';
+        return;
+      }
+
+      let score = 0;
+      if (val.length >= 6) score++;
+      if (val.length >= 9) score++;
+      if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+
+      if (score === 1) {
+        bar1.className = 'h-full w-1/3 bg-rose-500 transition-all';
+        label.textContent = 'Weak';
+        label.className = 'text-[10px] font-mono text-rose-400 w-16 text-right font-bold';
+      } else if (score === 2) {
+        bar1.className = 'h-full w-1/3 bg-amber-400 transition-all';
+        bar2.className = 'h-full w-1/3 bg-amber-400 transition-all';
+        label.textContent = 'Medium';
+        label.className = 'text-[10px] font-mono text-amber-400 w-16 text-right font-bold';
+      } else {
+        bar1.className = 'h-full w-1/3 bg-emerald-400 transition-all';
+        bar2.className = 'h-full w-1/3 bg-emerald-400 transition-all';
+        bar3.className = 'h-full w-1/3 bg-emerald-400 transition-all';
+        label.textContent = 'Strong';
+        label.className = 'text-[10px] font-mono text-emerald-400 w-16 text-right font-bold';
+      }
+    }
+
+    // --- LOCKOUT MECHANISM ---
+    function triggerLockout() {
+      lockoutActive = true;
+      lockoutSeconds = 15;
+
+      const notice = document.getElementById('lockout-notice');
+      const submitBtn = document.getElementById('login-submit-btn');
+      const timerText = document.getElementById('lockout-timer-text');
+
+      notice.classList.remove('hidden');
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+      if (lockoutTimerInterval) clearInterval(lockoutTimerInterval);
+
+      lockoutTimerInterval = setInterval(() => {
+        lockoutSeconds--;
+        if (timerText) timerText.textContent = `${lockoutSeconds}s`;
+
+        if (lockoutSeconds <= 0) {
+          clearInterval(lockoutTimerInterval);
+          lockoutActive = false;
+          failedAttempts = 0;
+          notice.classList.add('hidden');
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          generateCaptcha();
+          generateMathChallenge();
+        }
+      }, 1000);
+    }
+
+    // --- AUTHENTICATION FLOW ---
+    function checkSession() {
+      if (appData.currentUser) {
+        document.getElementById('auth-modal').classList.add('hidden');
+        document.getElementById('main-app').classList.remove('hidden');
+        renderApp();
+      } else {
+        document.getElementById('auth-modal').classList.remove('hidden');
+        document.getElementById('main-app').classList.add('hidden');
+      }
+    }
+
+    function switchAuthTab(tab) {
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      const loginBtn = document.getElementById('tab-btn-login');
+      const signupBtn = document.getElementById('tab-btn-signup');
+
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+        loginBtn.className = 'flex-1 py-2.5 text-center font-bold text-cyber-cyan border-b-2 border-cyber-cyan transition-all';
+        signupBtn.className = 'flex-1 py-2.5 text-center font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-200 transition-all';
+      } else {
+        loginForm.classList.add('hidden');
+        signupForm.classList.remove('hidden');
+        signupBtn.className = 'flex-1 py-2.5 text-center font-bold text-cyber-cyan border-b-2 border-cyber-cyan transition-all';
+        loginBtn.className = 'flex-1 py-2.5 text-center font-bold text-slate-400 border-b-2 border-transparent hover:text-slate-200 transition-all';
+      }
+    }
+
+    // --- SIGN UP & RETURN TO LOGIN ---
+    function handleSignUp(event) {
+      event.preventDefault();
+      const userVal = document.getElementById('signup-username').value.trim();
+      const passVal = document.getElementById('signup-password').value.trim();
+      const clubVal = document.getElementById('signup-club').value;
+      const colorVal = document.querySelector('input[name="avatar-color"]:checked')?.value || 'from-cyan-500 to-emerald-500';
+
+      if (!userVal || !passVal) {
+        showToast('Please fill all credentials', 'error');
+        return;
+      }
+
+      if (passVal.length < 6) {
+        showToast('Password must be at least 6 characters long.', 'error');
+        return;
+      }
+
+      if (appData.users.some(u => u.username.toLowerCase() === userVal.toLowerCase())) {
+        showToast('Username already registered in database.', 'error');
+        return;
+      }
+
+      const newUser = {
+        username: userVal,
+        role: userVal.toLowerCase() === 'yangwong' ? 'admin' : 'user',
+        team: clubVal,
+        color: colorVal
+      };
+
+      appData.users.push(newUser);
+      appData.passwords[userVal] = passVal;
+      saveDataToStorage();
+
+      // Clear sign-up form
+      document.getElementById('signup-username').value = '';
+      document.getElementById('signup-password').value = '';
+
+      // CRITICAL REQUIREMENT: DO NOT auto login. Switch back to LOGIN tab, pre-fill username, and show strict notice banner!
+      switchAuthTab('login');
+      document.getElementById('login-username').value = userVal;
+      document.getElementById('login-password').value = '';
+
+      const notice = document.getElementById('reg-success-notice');
+      const noticeMsg = document.getElementById('reg-success-msg');
+      noticeMsg.textContent = `Account registered for "${userVal}". Please complete CAPTCHA & 2FA security verification to login.`;
+      notice.classList.remove('hidden');
+
+      generateCaptcha();
+      generateMathChallenge();
+
+      showToast(`Account registered for "${userVal}". Proceed to Login Verification!`, 'success');
+    }
+
+    // --- INITIAL LOGIN SUBMIT (VERIFIES CREDENTIALS, CAPTCHA & MATH) ---
+    function handleInitialLoginSubmit(event) {
+      event.preventDefault();
+
+      if (lockoutActive) {
+        showToast('System Lockout Active. Please wait for cooldown.', 'error');
+        return;
+      }
+
+      const userVal = document.getElementById('login-username').value.trim();
+      const passVal = document.getElementById('login-password').value.trim();
+      const captchaVal = document.getElementById('login-captcha-input').value.trim();
+      const mathVal = parseInt(document.getElementById('login-math-input').value.trim());
+
+      // 1. Verify CAPTCHA
+      if (captchaVal.toLowerCase() !== currentCaptchaText.toLowerCase()) {
+        failedAttempts++;
+        showToast('Security CAPTCHA verification failed!', 'error');
+        generateCaptcha();
+        if (failedAttempts >= 3) triggerLockout();
+        return;
+      }
+
+      // 2. Verify Math
+      if (mathVal !== currentMathAnswer) {
+        failedAttempts++;
+        showToast('Tactical VAR Logic Math check incorrect!', 'error');
+        generateMathChallenge();
+        if (failedAttempts >= 3) triggerLockout();
+        return;
+      }
+
+      // 3. Verify Account Credentials
+      let targetUser = null;
+      if (userVal === 'yangwong' && passVal === '20150912') {
+        targetUser = {
+          username: 'yangwong',
+          role: 'admin',
+          team: 'Arsenal FC 🔴',
+          color: 'from-amber-400 to-orange-500'
+        };
+      } else {
+        const existingUser = appData.users.find(u => u.username.toLowerCase() === userVal.toLowerCase());
+        if (existingUser && appData.passwords[existingUser.username] === passVal) {
+          targetUser = existingUser;
+        }
+      }
+
+      if (!targetUser) {
+        failedAttempts++;
+        showToast('Invalid Username or Access Key!', 'error');
+        generateCaptcha();
+        generateMathChallenge();
+        if (failedAttempts >= 3) triggerLockout();
+        return;
+      }
+
+      // Credentials + CAPTCHA + Math passed! Open 2FA Token Verification Modal
+      pendingLoginUser = targetUser;
+      open2FATokenModal();
+    }
+
+    // --- 2FA ACCESS TOKEN MODAL LOGIC ---
+    function open2FATokenModal() {
+      // Generate 6-digit random token
+      generated2FAToken = String(Math.floor(100000 + Math.random() * 900000));
+      document.getElementById('2fa-token-display').textContent = `${generated2FAToken.slice(0,3)}-${generated2FAToken.slice(3)}`;
+      document.getElementById('2fa-input-code').value = '';
+
+      tokenSecondsLeft = 30;
+      update2FATimerUI();
+
+      if (tokenTimerInterval) clearInterval(tokenTimerInterval);
+      tokenTimerInterval = setInterval(() => {
+        tokenSecondsLeft--;
+        update2FATimerUI();
+        if (tokenSecondsLeft <= 0) {
+          // Refresh Token
+          generated2FAToken = String(Math.floor(100000 + Math.random() * 900000));
+          document.getElementById('2fa-token-display').textContent = `${generated2FAToken.slice(0,3)}-${generated2FAToken.slice(3)}`;
+          tokenSecondsLeft = 30;
+          showToast('Security token refreshed.', 'info');
+        }
+      }, 1000);
+
+      document.getElementById('modal-2fa-verify').classList.remove('hidden');
+    }
+
+    function update2FATimerUI() {
+      const bar = document.getElementById('2fa-timer-bar');
+      const text = document.getElementById('2fa-timer-text');
+      if (bar) bar.style.width = `${(tokenSecondsLeft / 30) * 100}%`;
+      if (text) text.textContent = `Token expires in ${tokenSecondsLeft}s`;
+    }
+
+    function close2FAModal() {
+      if (tokenTimerInterval) clearInterval(tokenTimerInterval);
+      document.getElementById('modal-2fa-verify').classList.add('hidden');
+      pendingLoginUser = null;
+    }
+
+    function handleVerify2FAToken(event) {
+      event.preventDefault();
+      const codeInput = document.getElementById('2fa-input-code').value.trim();
+
+      if (codeInput !== generated2FAToken) {
+        failedAttempts++;
+        showToast('Incorrect 2FA Access Token!', 'error');
+        if (failedAttempts >= 3) {
+          close2FAModal();
+          triggerLockout();
+        }
+        return;
+      }
+
+      // All security layers passed!
+      if (tokenTimerInterval) clearInterval(tokenTimerInterval);
+      document.getElementById('modal-2fa-verify').classList.add('hidden');
+
+      appData.currentUser = pendingLoginUser;
+      saveDataToStorage();
+
+      failedAttempts = 0;
+      pendingLoginUser = null;
+
+      // Hide reg notice
+      document.getElementById('reg-success-notice').classList.add('hidden');
+
+      showToast(`Security Clearance Granted! Welcome ${appData.currentUser.username}!`, 'success');
+      checkSession();
+    }
+
+    function handleLogout() {
+      appData.currentUser = null;
+      saveDataToStorage();
+      showToast('Terminated Session.', 'info');
+      generateCaptcha();
+      generateMathChallenge();
+      checkSession();
+    }
+
+    // --- MAIN RENDER LOGIC ---
+    function renderApp() {
+      const user = appData.currentUser;
+      if (!user) return;
+
+      const isAdmin = user.role === 'admin' || user.username === 'yangwong';
+
+      document.getElementById('header-username').textContent = user.username;
+      document.getElementById('header-user-club').textContent = user.team;
+      const avatarEl = document.getElementById('header-avatar');
+      avatarEl.textContent = user.username.charAt(0).toUpperCase();
+      avatarEl.className = `w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-slate-950 shadow bg-gradient-to-tr ${user.color}`;
+
+      const adminBadge = document.getElementById('admin-badge-indicator');
+      const manageUsersBtn = document.getElementById('btn-manage-users');
+      const pinEditBtn = document.getElementById('admin-pin-edit-btn');
+      const adminStatsControls = document.getElementById('admin-stats-controls');
+      const adminTableSortBtn = document.getElementById('admin-table-sort-btn');
+
+      if (isAdmin) {
+        adminBadge.classList.remove('hidden');
+        adminBadge.classList.add('flex');
+        manageUsersBtn.classList.remove('hidden');
+        pinEditBtn.classList.remove('hidden');
+        adminStatsControls.classList.remove('hidden');
+        adminStatsControls.classList.add('flex');
+        adminTableSortBtn.classList.remove('hidden');
+      } else {
+        adminBadge.classList.add('hidden');
+        manageUsersBtn.classList.add('hidden');
+        pinEditBtn.classList.add('hidden');
+        adminStatsControls.classList.add('hidden');
+        adminTableSortBtn.classList.add('hidden');
+      }
+
+      document.querySelectorAll('.admin-only-col').forEach(el => {
+        if (isAdmin) el.classList.remove('hidden');
+        else el.classList.add('hidden');
+      });
+
+      document.getElementById('pinned-banner-text').textContent = appData.pinnedMessage;
+
+      renderChat();
+      renderMatches();
+      renderLeagueTable();
+      renderTopScorers();
+    }
+
+    // --- NAVIGATION LOGIC ---
+    function setMainView(view) {
+      activeMainView = view;
+      const chatSec = document.getElementById('section-chat');
+      const statsSec = document.getElementById('section-stats');
+
+      ['all', 'chat', 'stats'].forEach(v => {
+        const btn = document.getElementById(`nav-btn-${v}`);
+        if (btn) {
+          if (v === view) {
+            btn.className = 'px-4 py-1.5 rounded-lg font-bold transition-all text-slate-950 bg-cyber-cyan shadow-md';
+          } else {
+            btn.className = 'px-4 py-1.5 rounded-lg font-bold transition-all text-slate-400 hover:text-white';
+          }
+        }
+      });
+
+      const mobChat = document.getElementById('mobile-tab-chat');
+      const mobStats = document.getElementById('mobile-tab-stats');
+
+      if (view === 'all') {
+        chatSec.className = 'w-full md:w-1/2 flex flex-col border-r border-cyan-900/40 bg-slate-950/40';
+        statsSec.className = 'w-full md:w-1/2 flex flex-col bg-slate-950/20';
+      } else if (view === 'chat') {
+        chatSec.className = 'w-full flex flex-col bg-slate-950/40';
+        statsSec.className = 'hidden';
+        if (mobChat) mobChat.className = 'flex-1 py-2.5 text-center border-b-2 border-cyber-cyan text-cyber-cyan transition';
+        if (mobStats) mobStats.className = 'flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 transition';
+      } else if (view === 'stats') {
+        chatSec.className = 'hidden';
+        statsSec.className = 'w-full flex flex-col bg-slate-950/20';
+        if (mobChat) mobChat.className = 'flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 transition';
+        if (mobStats) mobStats.className = 'flex-1 py-2.5 text-center border-b-2 border-cyber-cyan text-cyber-cyan transition';
+      }
+    }
+
+    function setStatsSubTab(subtab) {
+      activeStatsTab = subtab;
+      const panelScores = document.getElementById('subpanel-scores');
+      const panelTable = document.getElementById('subpanel-table');
+      const panelScorers = document.getElementById('subpanel-scorers');
+
+      const btnScores = document.getElementById('subtab-btn-scores');
+      const btnTable = document.getElementById('subtab-btn-table');
+      const btnScorers = document.getElementById('subtab-btn-scorers');
+
+      panelScores.classList.add('hidden');
+      panelTable.classList.add('hidden');
+      panelScorers.classList.add('hidden');
+
+      [btnScores, btnTable, btnScorers].forEach(b => {
+        b.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition';
+      });
+
+      if (subtab === 'scores') {
+        panelScores.classList.remove('hidden');
+        btnScores.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-cyber-cyan shadow transition';
+      } else if (subtab === 'table') {
+        panelTable.classList.remove('hidden');
+        btnTable.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-cyber-cyan shadow transition';
+      } else if (subtab === 'scorers') {
+        panelScorers.classList.remove('hidden');
+        btnScorers.className = 'px-3 py-1.5 rounded-lg text-xs font-bold text-slate-950 bg-cyber-cyan shadow transition';
+      }
+    }
+
+    // --- CHAT SYSTEM ---
+    function renderChat() {
+      const container = document.getElementById('chat-messages-container');
+      const countBadge = document.getElementById('chat-count-badge');
+      const currentUser = appData.currentUser;
+      const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.username === 'yangwong');
+
+      countBadge.textContent = `${appData.chatMessages.length} msgs`;
+      container.innerHTML = '';
+
+      appData.chatMessages.forEach(msg => {
+        const isSelf = msg.username === currentUser.username;
+        const msgIsAdmin = msg.role === 'admin' || msg.username === 'yangwong';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = `flex gap-3 ${isSelf ? 'flex-row-reverse' : 'flex-row'} items-start group`;
+
+        let avatarGradient = 'from-slate-700 to-slate-900';
+        const msgUser = appData.users.find(u => u.username === msg.username);
+        if (msgUser && msgUser.color) avatarGradient = msgUser.color;
+
+        wrapper.innerHTML = `
+          <div class="w-8 h-8 rounded-full bg-gradient-to-tr ${avatarGradient} flex items-center justify-center font-bold text-xs text-slate-950 shadow shrink-0">
+            ${msg.username.charAt(0).toUpperCase()}
+          </div>
+          <div class="max-w-[80%] flex flex-col ${isSelf ? 'items-end' : 'items-start'} space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-300 font-mono">${escapeHtml(msg.username)}</span>
+              ${msgIsAdmin ? '<span class="text-[9px] bg-amber-500/20 border border-amber-400/40 text-amber-300 px-1.5 py-0.2 rounded font-hud font-bold">ADMIN</span>' : ''}
+              <span class="text-[10px] text-cyan-400/80">${msg.team || ''}</span>
+              <span class="text-[10px] font-mono text-slate-500">${msg.timestamp}</span>
+            </div>
+
+            <div class="relative px-3.5 py-2 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-md ${
+              msg.isPinned ? 'border border-cyan-400/60 bg-gradient-to-r from-cyan-950/60 to-slate-950 text-cyan-100' : 
+              isSelf ? 'bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-tr-none' : 'bg-slate-900/90 text-slate-200 border border-cyan-900/40 rounded-tl-none'
+            }">
+              ${msg.isPinned ? '<div class="text-[9px] font-hud text-cyan-400 font-bold mb-1 flex items-center gap-1"><i class="fa-solid fa-thumbtack"></i> PINNED TRANSMISSION</div>' : ''}
+              ${escapeHtml(msg.text)}
+            </div>
+
+            ${isAdmin ? `
+              <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 text-[10px] font-mono mt-0.5">
+                <button onclick="adminTogglePinMessage('${msg.id}')" class="text-slate-400 hover:text-cyan-400 transition">
+                  <i class="fa-solid fa-thumbtack"></i> ${msg.isPinned ? 'Unpin' : 'Pin Banner'}
+                </button>
+                <button onclick="adminDeleteMessage('${msg.id}')" class="text-slate-400 hover:text-rose-400 transition">
+                  <i class="fa-solid fa-trash"></i> Delete
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        container.appendChild(wrapper);
+      });
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function handleSendMessage(event) {
+      event.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const currentUser = appData.currentUser;
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+      const newMsg = {
+        id: 'msg_' + Date.now(),
+        username: currentUser.username,
+        role: currentUser.role,
+        team: currentUser.team,
+        text: text,
+        timestamp: timeStr,
+        isPinned: false
+      };
+
+      appData.chatMessages.push(newMsg);
+      saveDataToStorage();
+      input.value = '';
+      renderChat();
+    }
+
+    function quickSendEmoji(emojiStr) {
+      const input = document.getElementById('chat-input');
+      input.value = (input.value ? input.value + ' ' : '') + emojiStr;
+      input.focus();
+    }
+
+    function adminTogglePinMessage(msgId) {
+      const msg = appData.chatMessages.find(m => m.id === msgId);
+      if (!msg) return;
+
+      msg.isPinned = !msg.isPinned;
+      if (msg.isPinned) {
+        appData.pinnedMessage = `📌 ${msg.username}: "${msg.text}"`;
+        showToast('Pinned announcement updated!', 'success');
+      } else {
+        showToast('Message unpinned.', 'info');
+      }
+      saveDataToStorage();
+      renderApp();
+    }
+
+    function adminDeleteMessage(msgId) {
+      appData.chatMessages = appData.chatMessages.filter(m => m.id !== msgId);
+      saveDataToStorage();
+      showToast('Message deleted.', 'info');
+      renderChat();
+    }
+
+    // --- STATS / MATCH LOGIC ---
+    function renderMatches() {
+      const container = document.getElementById('matches-list');
+      container.innerHTML = '';
+
+      const isAdmin = appData.currentUser && (appData.currentUser.role === 'admin' || appData.currentUser.username === 'yangwong');
+
+      appData.matches.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'hud-panel p-3.5 rounded-xl border border-cyan-900/40 hover:border-cyan-500/40 transition relative';
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between text-[10px] font-hud text-slate-400 mb-2">
+            <span class="font-bold text-cyan-300 uppercase">${escapeHtml(m.league)}</span>
+            <span class="px-2 py-0.5 rounded font-black ${m.isLive ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 animate-pulse' : 'bg-slate-900 text-slate-400 border border-slate-800'}">
+              ${escapeHtml(m.status)}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between py-1">
+            <div class="flex items-center gap-2 flex-1">
+              <span class="text-lg">${m.homeFlag || '⚽'}</span>
+              <span class="font-bold text-xs sm:text-sm text-slate-200 truncate font-mono">${escapeHtml(m.homeTeam)}</span>
+            </div>
+
+            <div class="px-3.5 py-1 bg-slate-950 border border-cyan-500/30 rounded-lg text-sm sm:text-base font-hud font-black tracking-widest text-cyber-neon shadow-inner">
+              ${m.homeScore} - ${m.awayScore}
+            </div>
+
+            <div class="flex items-center justify-end gap-2 flex-1 text-right">
+              <span class="font-bold text-xs sm:text-sm text-slate-200 truncate font-mono">${escapeHtml(m.awayTeam)}</span>
+              <span class="text-lg">${m.awayFlag || '⚽'}</span>
+            </div>
+          </div>
+
+          ${isAdmin ? `
+            <div class="mt-2 pt-2 border-t border-slate-800/80 flex items-center justify-end gap-2 text-[10px] font-mono">
+              <button onclick="openAdminStatsEditModal('scores', '${m.id}')" class="text-slate-400 hover:text-cyan-400 px-2 py-0.5 bg-slate-900 rounded">
+                <i class="fa-solid fa-pen"></i> Edit
+              </button>
+              <button onclick="adminDeleteStatsItem('scores', '${m.id}')" class="text-slate-400 hover:text-rose-400 px-2 py-0.5 bg-slate-900 rounded">
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+            </div>
+          ` : ''}
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderLeagueTable() {
+      const tbody = document.getElementById('league-table-body');
+      tbody.innerHTML = '';
+
+      const isAdmin = appData.currentUser && (appData.currentUser.role === 'admin' || appData.currentUser.username === 'yangwong');
+
+      appData.leagueTable.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-cyan-950/20 transition';
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 text-center font-bold text-cyan-400">${idx + 1}</td>
+          <td class="py-2.5 px-3 font-semibold text-slate-200 flex items-center gap-2 font-mono">
+            <span>${row.logo || '⚽'}</span>
+            <span>${escapeHtml(row.club)}</span>
+          </td>
+          <td class="py-2.5 px-2 text-center text-slate-400">${row.mp}</td>
+          <td class="py-2.5 px-2 text-center text-slate-400">${row.w}</td>
+          <td class="py-2.5 px-2 text-center text-slate-400">${row.d}</td>
+          <td class="py-2.5 px-2 text-center text-slate-400">${row.l}</td>
+          <td class="py-2.5 px-2 text-center ${row.gd > 0 ? 'text-cyber-neon' : row.gd < 0 ? 'text-rose-400' : 'text-slate-400'}">${row.gd > 0 ? '+' + row.gd : row.gd}</td>
+          <td class="py-2.5 px-3 text-center font-black text-white text-sm font-hud">${row.pts}</td>
+          ${isAdmin ? `
+            <td class="admin-only-col py-2.5 px-2 text-center">
+              <button onclick="openAdminStatsEditModal('table', '${row.id}')" class="text-slate-400 hover:text-cyan-400 p-1"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="adminDeleteStatsItem('table', '${row.id}')" class="text-slate-400 hover:text-rose-400 p-1"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          ` : ''}
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderTopScorers() {
+      const tbody = document.getElementById('top-scorers-body');
+      tbody.innerHTML = '';
+
+      const isAdmin = appData.currentUser && (appData.currentUser.role === 'admin' || appData.currentUser.username === 'yangwong');
+
+      appData.topScorers.forEach((s, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-cyan-950/20 transition font-mono';
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 text-center font-hud font-bold text-amber-400">${idx + 1}</td>
+          <td class="py-2.5 px-3 font-semibold text-slate-200">${escapeHtml(s.player)}</td>
+          <td class="py-2.5 px-3 text-slate-400">${escapeHtml(s.club)}</td>
+          <td class="py-2.5 px-3 text-center font-black text-cyber-neon text-sm font-hud">${s.goals}</td>
+          <td class="py-2.5 px-3 text-center text-slate-300 font-bold">${s.assists}</td>
+          ${isAdmin ? `
+            <td class="admin-only-col py-2.5 px-2 text-center">
+              <button onclick="openAdminStatsEditModal('scorers', '${s.id}')" class="text-slate-400 hover:text-cyan-400 p-1"><i class="fa-solid fa-pen"></i></button>
+              <button onclick="adminDeleteStatsItem('scorers', '${s.id}')" class="text-slate-400 hover:text-rose-400 p-1"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          ` : ''}
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function autoSortLeagueTable() {
+      appData.leagueTable.sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        return b.gd - a.gd;
+      });
+      appData.leagueTable.forEach((row, i) => row.rank = i + 1);
+      saveDataToStorage();
+      renderLeagueTable();
+      showToast('Table telemetry sorted by PTS and GD!', 'success');
+    }
+
+    // --- MODAL CONTROLS & FORMS ---
+    function openPinnedEditModal() {
+      document.getElementById('pinned-input-text').value = appData.pinnedMessage;
+      document.getElementById('modal-edit-pinned').classList.remove('hidden');
+    }
+
+    function handleSavePinnedMessage(event) {
+      event.preventDefault();
+      const text = document.getElementById('pinned-input-text').value.trim();
+      if (!text) return;
+
+      appData.pinnedMessage = text;
+      saveDataToStorage();
+      closeModal('modal-edit-pinned');
+      renderApp();
+      showToast('Pinned announcement saved!', 'success');
+    }
+
+    function openAdminStatsAddModal() {
+      editingStatsItemId = null;
+      setupStatsForm(activeStatsTab, null);
+      document.getElementById('modal-edit-stats').classList.remove('hidden');
+    }
+
+    function openAdminStatsEditModal(type, id) {
+      editingStatsItemId = id;
+      let itemData = null;
+
+      if (type === 'scores') itemData = appData.matches.find(m => m.id === id);
+      else if (type === 'table') itemData = appData.leagueTable.find(t => t.id === id);
+      else if (type === 'scorers') itemData = appData.topScorers.find(s => s.id === id);
+
+      setupStatsForm(type, itemData);
+      document.getElementById('modal-edit-stats').classList.remove('hidden');
+    }
+
+    function setupStatsForm(type, data) {
+      const fieldsContainer = document.getElementById('stats-form-fields');
+      const titleEl = document.getElementById('modal-stats-title');
+
+      if (type === 'scores') {
+        titleEl.innerHTML = `<i class="fa-solid fa-futbol text-cyber-cyan"></i> ${data ? 'EDIT MATCH TELEMETRY' : 'ADD NEW MATCH'}`;
+        fieldsContainer.innerHTML = `
+          <div>
+            <label class="block text-xs font-hud text-cyan-300 mb-1">LEAGUE TAG</label>
+            <input type="text" id="stat-input-league" required value="${data ? escapeHtml(data.league) : 'Champions League'}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">HOME TEAM</label>
+              <input type="text" id="stat-input-hometeam" required value="${data ? escapeHtml(data.homeTeam) : ''}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white" placeholder="Arsenal">
+            </div>
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">HOME BADGE</label>
+              <input type="text" id="stat-input-homeflag" value="${data ? escapeHtml(data.homeFlag) : '🔴'}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">AWAY TEAM</label>
+              <input type="text" id="stat-input-awayteam" required value="${data ? escapeHtml(data.awayTeam) : ''}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white" placeholder="Real Madrid">
+            </div>
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">AWAY BADGE</label>
+              <input type="text" id="stat-input-awayflag" value="${data ? escapeHtml(data.awayFlag) : '⚪'}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">HOME SCORE</label>
+              <input type="number" id="stat-input-homescore" required value="${data ? data.homeScore : 0}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">AWAY SCORE</label>
+              <input type="number" id="stat-input-awayscore" required value="${data ? data.awayScore : 0}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">STATUS</label>
+              <input type="text" id="stat-input-status" required value="${data ? escapeHtml(data.status) : 'LIVE 45\''}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+          </div>
+        `;
+      } else if (type === 'table') {
+        titleEl.innerHTML = `<i class="fa-solid fa-list-ol text-cyber-cyan"></i> ${data ? 'EDIT CLUB TABLE ENTRY' : 'ADD CLUB ENTRY'}`;
+        fieldsContainer.innerHTML = `
+          <div>
+            <label class="block text-xs font-hud text-cyan-300 mb-1">CLUB NAME</label>
+            <input type="text" id="stat-input-clubname" required value="${data ? escapeHtml(data.club) : ''}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+          </div>
+          <div>
+            <label class="block text-xs font-hud text-cyan-300 mb-1">LOGICAL BADGE / EMOJI</label>
+            <input type="text" id="stat-input-logo" value="${data ? escapeHtml(data.logo) : '🔴'}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">MP</label>
+              <input type="number" id="stat-input-mp" required value="${data ? data.mp : 0}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">WINS (W)</label>
+              <input type="number" id="stat-input-w" required value="${data ? data.w : 0}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">DRAWS (D)</label>
+              <input type="number" id="stat-input-d" required value="${data ? data.d : 0}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">LOSSES (L)</label>
+              <input type="number" id="stat-input-l" required value="${data ? data.l : 0}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">GD</label>
+              <input type="number" id="stat-input-gd" required value="${data ? data.gd : 0}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">PTS</label>
+              <input type="number" id="stat-input-pts" required value="${data ? data.pts : 0}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+          </div>
+        `;
+      } else if (type === 'scorers') {
+        titleEl.innerHTML = `<i class="fa-solid fa-user-ninja text-cyber-cyan"></i> ${data ? 'EDIT SCORER' : 'ADD SCORER'}`;
+        fieldsContainer.innerHTML = `
+          <div>
+            <label class="block text-xs font-hud text-cyan-300 mb-1">PLAYER NAME</label>
+            <input type="text" id="stat-input-player" required value="${data ? escapeHtml(data.player) : ''}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+          </div>
+          <div>
+            <label class="block text-xs font-hud text-cyan-300 mb-1">CLUB</label>
+            <input type="text" id="stat-input-scorerclub" required value="${data ? escapeHtml(data.club) : ''}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">GOALS ⚽</label>
+              <input type="number" id="stat-input-goals" required value="${data ? data.goals : 0}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+            <div>
+              <label class="block text-xs font-hud text-cyan-300 mb-1">ASSISTS 👟</label>
+              <input type="number" id="stat-input-assists" required value="${data ? data.assists : 0}" class="w-full glass-input px-3 py-2 rounded-xl text-xs text-white">
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function handleSaveStatsItem(event) {
+      event.preventDefault();
+
+      if (activeStatsTab === 'scores') {
+        const item = {
+          id: editingStatsItemId || 'm_' + Date.now(),
+          league: document.getElementById('stat-input-league').value,
+          homeTeam: document.getElementById('stat-input-hometeam').value,
+          homeFlag: document.getElementById('stat-input-homeflag').value,
+          awayTeam: document.getElementById('stat-input-awayteam').value,
+          awayFlag: document.getElementById('stat-input-awayflag').value,
+          homeScore: parseInt(document.getElementById('stat-input-homescore').value) || 0,
+          awayScore: parseInt(document.getElementById('stat-input-awayscore').value) || 0,
+          status: document.getElementById('stat-input-status').value,
+          isLive: document.getElementById('stat-input-status').value.toLowerCase().includes('live')
+        };
+
+        if (editingStatsItemId) {
+          const idx = appData.matches.findIndex(m => m.id === editingStatsItemId);
+          if (idx !== -1) appData.matches[idx] = item;
+        } else {
+          appData.matches.unshift(item);
+        }
+      } else if (activeStatsTab === 'table') {
+        const item = {
+          id: editingStatsItemId || 't_' + Date.now(),
+          rank: appData.leagueTable.length + 1,
+          club: document.getElementById('stat-input-clubname').value,
+          logo: document.getElementById('stat-input-logo').value,
+          mp: parseInt(document.getElementById('stat-input-mp').value) || 0,
+          w: parseInt(document.getElementById('stat-input-w').value) || 0,
+          d: parseInt(document.getElementById('stat-input-d').value) || 0,
+          l: parseInt(document.getElementById('stat-input-l').value) || 0,
+          gd: parseInt(document.getElementById('stat-input-gd').value) || 0,
+          pts: parseInt(document.getElementById('stat-input-pts').value) || 0
+        };
+
+        if (editingStatsItemId) {
+          const idx = appData.leagueTable.findIndex(t => t.id === editingStatsItemId);
+          if (idx !== -1) appData.leagueTable[idx] = item;
+        } else {
+          appData.leagueTable.push(item);
+        }
+      } else if (activeStatsTab === 'scorers') {
+        const item = {
+          id: editingStatsItemId || 's_' + Date.now(),
+          rank: appData.topScorers.length + 1,
+          player: document.getElementById('stat-input-player').value,
+          club: document.getElementById('stat-input-scorerclub').value,
+          goals: parseInt(document.getElementById('stat-input-goals').value) || 0,
+          assists: parseInt(document.getElementById('stat-input-assists').value) || 0
+        };
+
+        if (editingStatsItemId) {
+          const idx = appData.topScorers.findIndex(s => s.id === editingStatsItemId);
+          if (idx !== -1) appData.topScorers[idx] = item;
+        } else {
+          appData.topScorers.push(item);
+        }
+      }
+
+      saveDataToStorage();
+      closeModal('modal-edit-stats');
+      renderApp();
+      showToast('Telemetry saved!', 'success');
+    }
+
+    function adminDeleteStatsItem(type, id) {
+      if (type === 'scores') {
+        appData.matches = appData.matches.filter(m => m.id !== id);
+      } else if (type === 'table') {
+        appData.leagueTable = appData.leagueTable.filter(t => t.id !== id);
+      } else if (type === 'scorers') {
+        appData.topScorers = appData.topScorers.filter(s => s.id !== id);
+      }
+      saveDataToStorage();
+      renderApp();
+      showToast('Item deleted.', 'info');
+    }
+
+    // --- ACCOUNT CONTROL MANAGER ---
+    function openUserManagementModal() {
+      const tbody = document.getElementById('user-management-table-body');
+      tbody.innerHTML = '';
+
+      appData.users.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-cyan-950/20';
+
+        const isMainAdmin = u.username === 'yangwong';
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 font-semibold text-slate-200 flex items-center gap-2">
+            <div class="w-5 h-5 rounded-full bg-gradient-to-tr ${u.color || 'from-slate-600 to-slate-800'} flex items-center justify-center text-[9px] text-slate-950 font-bold">
+              ${u.username.charAt(0).toUpperCase()}
+            </div>
+            <span>${escapeHtml(u.username)}</span>
+          </td>
+          <td class="py-2.5 px-3">
+            <span class="px-2 py-0.5 rounded text-[9px] font-hud font-bold uppercase ${u.role === 'admin' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-slate-900 text-slate-400'}">
+              ${u.role}
+            </span>
+          </td>
+          <td class="py-2.5 px-3 text-slate-400">${escapeHtml(u.team || 'None')}</td>
+          <td class="py-2.5 px-3 text-right space-x-2">
+            ${!isMainAdmin ? `
+              <button onclick="adminToggleUserRole('${u.username}')" class="text-xs text-cyan-400 hover:underline">
+                ${u.role === 'admin' ? 'Demote' : 'Promote'}
+              </button>
+              <button onclick="adminDeleteUser('${u.username}')" class="text-xs text-rose-400 hover:underline">
+                Remove
+              </button>
+            ` : '<span class="text-slate-500 italic">Primary Admin</span>'}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('modal-manage-users').classList.remove('hidden');
+    }
+
+    function adminToggleUserRole(username) {
+      const u = appData.users.find(x => x.username === username);
+      if (!u) return;
+      u.role = u.role === 'admin' ? 'user' : 'admin';
+      saveDataToStorage();
+      openUserManagementModal();
+      renderApp();
+      showToast(`Updated ${username}'s role to ${u.role}`, 'success');
+    }
+
+    function adminDeleteUser(username) {
+      appData.users = appData.users.filter(u => u.username !== username);
+      delete appData.passwords[username];
+      saveDataToStorage();
+      openUserManagementModal();
+      renderApp();
+      showToast(`Removed account: ${username}`, 'info');
+    }
+
+    // --- SYSTEM UTILITIES & TOASTS ---
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function showToast(msg, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+
+      const colors = {
+        success: 'bg-emerald-950/90 border-emerald-500 text-emerald-200',
+        error: 'bg-rose-950/90 border-rose-500 text-rose-200',
+        info: 'bg-slate-950/90 border-cyan-500/50 text-cyan-200'
+      };
+
+      toast.className = `px-4 py-2.5 rounded-xl border shadow-2xl text-xs font-mono font-semibold backdrop-blur-md transition-all duration-300 transform translate-x-5 opacity-0 ${colors[type] || colors.info}`;
+      toast.innerHTML = `<i class="fa-solid fa-shield-halved mr-2 text-cyber-cyan"></i> ${msg}`;
+
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-x-5', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-x-5', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
